@@ -52,7 +52,7 @@ def read_ff10_slave(fname, snoop=False, nrows=None, use_embedded_header = True, 
             if nskip == 0: 
                 h0 = line.strip()
                 #print(line)
-            if line and line[0] != '#': break
+            if line and (line[0] != '#' and line !='\n'): break
             h_save.append(line)
             nskip += 1
 
