@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smoke_util"
+version = "0.1.0"
+description = "Utilities to work with Smoke"
+readme = "README.md"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = ">=3.8"
+dependencies = ["pandas"]  # e.g., ["numpy", "pandas"]
+
+[project.scripts]
+my_script = "smoke_utils.smoke_reader_v5:cmdline"
+
