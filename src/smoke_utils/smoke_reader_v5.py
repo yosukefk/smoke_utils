@@ -201,6 +201,102 @@ def read_invtable(fname):
             ])
     return df
 
+def read_costcy(fname):
+    # TODO some columns should be character
+    dct = {}
+    with open(fname) as f:
+        for i, line in enumerate(f):
+            if line.startswith('/COUNTRY/'):
+                pos_country = i
+            elif line.startswith('/STATE/'):
+                pos_state = i
+            elif line.startswith('/COUNTY/'):
+                pos_county = i
+
+        f.seek(0)
+        df_country = pd.read_fwf(f, 
+                colspecs=[
+                    (0,1),
+                    (2,22),
+                    ], 
+                names = [
+                    'country_cd',
+                    'country_name',
+                    ],
+                skiprows=pos_country + 1,
+                nrows = pos_state - pos_country - 1,
+                )
+        dct['country'] = df_country
+
+        f.seek(0)
+        df_state = pd.read_fwf(f,
+                colspecs=[
+                    (0,1),
+                    (1,3),
+                    (3,5),
+                    (6,26),
+                    (26,28),
+                    (31,34),
+                    ],
+                skiprows=pos_state + 1,
+                nrows = pos_county - pos_state - 1,
+                names = [
+                    'country_cd',
+                    'state_cd',
+                    'state_abbr',
+                    'state_name',
+                    'epa_region',
+                    'state_tz',
+                    ],
+                )
+        dct['state'] = df_state
+
+        f.seek(0)
+        df_county = pd.read_fwf(f,
+                colspecs=[
+                    (1,3),
+                    (4,24),
+                    (25,26),
+                    (26,28),
+                    (28,31),
+                    (31,34),
+                    (34,38),
+                    (39,42),
+                    (42,43),
+                    (43,52),
+                    (52,61),
+                    (62,74),
+                    (75,84),
+                    (85,94),
+                    (94,103),
+                    (103,112),
+                    (113,128),
+                    ],
+                names=[
+                    'state_abbr',
+                    'county_name',
+                    'country_cd',
+                    'state_cd',
+                    'county_cd',
+                    'state_cd_aeros',
+                    'county_cd_aeros',
+                    'county_tz',
+                    'daylight_saving_time',
+                    'county_center_longitude',
+                    'county_center_latiitude',
+                    'county_area',
+                    'county_west_longitude',
+                    'county_east_longitude',
+                    'county_south_latitude',
+                    'county_north_latitude',
+                    'county_population',
+                    ],
+                skiprows=pos_county+1
+                )
+        dct['county'] = df_county
+    return dct
+
+
 
 
         
