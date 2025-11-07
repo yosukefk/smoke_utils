@@ -15,12 +15,14 @@ known_headers = {
         }
 
 def snoop_ff10(fname):
+    """read header part of FF10 inventory file"""
     try:
         return read_ff10(fname, snoop=True)
     except:
         return read_ff10(fname, snoop=True)
 
 def head_ff10(fname):
+    """read first 10 rec of FF10 inventory file"""
     return read_ff10(fname, nrows=10)
 
 def process_ff10(fname, func, reducer=None, chunksize=10**6):
@@ -29,6 +31,7 @@ def process_ff10(fname, func, reducer=None, chunksize=10**6):
 
 
 def read_ff10(fname, snoop=False, nrows=None, use_embedded_header = True, func=None, reducer=None,chunksize=None):
+    """reads FF10 inventory file"""
     try:
         return read_ff10_slave(fname, snoop, nrows, use_embedded_header, func, reducer,chunksize)
 
@@ -108,7 +111,21 @@ def read_ff10_slave(fname, snoop=False, nrows=None, use_embedded_header = True, 
             results = reducer(results)
         return results
 
+def read_gref(fname):
+    """reads GREF file"""
+    with open(fname) as f:
+        nskip = 0
+        for line in f:
+            if line[0] != '#': break
+            nskip += 1
+    df = pd.read_csv(fname, skiprows=nskip, delimiter=';', comment='!', names=['region_cd', 'scc', 'srg_cd'])
+    df2 = pd.read_csv(fname, skiprows=nskip, delimiter='!', names=['data', 'comment'])
+    df['comment'] = df2.comment
+    
+    return df
+
 def read_sccdesc(fname, lv=None):
+    """reads SCCDESC file"""
     with open(fname) as f:
         nskip = 0
         for line in f:
@@ -158,6 +175,7 @@ def read_sccdesc(fname, lv=None):
     return df
 
 def read_invtable(fname):
+    """read INVTABLE file"""
     with open(fname) as f:
         nskip = 0
         for line in f:
