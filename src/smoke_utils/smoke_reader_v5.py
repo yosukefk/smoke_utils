@@ -124,6 +124,17 @@ def read_gref(fname):
     
     return df
 
+def read_srgdesc(fname):
+    """read srgdesc file"""
+    with open(fname) as f:
+        nskip = 0
+        for line in f:
+            if line[0] != '#': break
+            nskip += 1
+    df = pd.read_csv(fname, skiprows=nskip, delimiter=';', comment='!', names=['country_cd', 'srg_cd', 'srg_desc', 'srg_file'])
+    return df
+
+
 def read_sccdesc(fname, lv=None):
     """reads SCCDESC file"""
     with open(fname) as f:
