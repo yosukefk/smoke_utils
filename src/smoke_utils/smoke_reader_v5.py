@@ -231,6 +231,7 @@ def read_invtable(fname):
     return df
 
 def read_costcy(fname):
+    """reads COSTCY file"""
     # TODO some columns should be character
     dct = {}
     with open(fname) as f:
@@ -327,6 +328,86 @@ def read_costcy(fname):
 
 
 
+def read_smkreport(fname, delim=';'):
+    """reads Smoke Report file"""
+
+    # read header part
+    h = []
+    ndelim = []
+
+    with open(fname) as f:
+        for line in f:
+            if line[0] != '#': break
+            h.append(line)
+
+    # assume last two line of header tells column names
+
+    # total number of header rows
+    nheader = len(h)
+
+    # row number of header rows
+    pos_h0 = nheader - 2
+    pos_h1 = nheader - 1
+
+    # rows for column names
+    header0 = h[pos_h0]
+    header1 = h[pos_h1]
+
+    # first header row has less delimiter than second row, 
+    delim_pos1 = [i for i in range(len(header1)) if header1[i] == delim]
+    #print(delim_pos1)
+    delim_pos0 = [i for i in range(len(header0)) if header0[i] == delim]
+    #print(delim_pos0)
+
+    assert set(delim_pos0).issubset( set(delim_pos1))
+
+    # match the delim position in first header to second header
+    to_replace_w_delim = set(delim_pos1) - set(delim_pos0)
+    n_index_cols = len(to_replace_w_delim) + 1
+    header0 = ''.join([delim if i in to_replace_w_delim else _ for  i,_  in enumerate(header0)])
+
+
+    # parse header rows into col names
+    header0 = [_.strip() for _ in header0.split(delim)]
+    header1 = [_.strip() for _ in header1.split(delim)]
+
+    # first col starts with #
+    header0[0] = re.sub(r'^#', '', header0[0], ).strip()
+    header1[0] = re.sub(r'^#', '', header1[0], ).strip()
+
+    #print(len(header0))
+    #print(len(header1))
+    #print(header0)
+    #print(header1)
+
+    # combine two header rows into multiindex
+    header = [(p,q) for p,q in zip(header0, header1)]
+    #print(header)
+
+
+    # now read the file again, with header info being analized
+    df = pd.read_csv(fname, sep=delim, 
+            names=header, skiprows=nheader )
+
+    # some of metadata (index) has extra blanks
+    known_string_indices = ['Country', 'State', 'County', ]
+    for col in known_string_indices:
+        if ('', col) in df.columns:
+            df.loc[:, ('',col)] = df[('',col)].str.strip()
+
+
+    # those unbroken part of first row of header are meant for metadata, not the emissions themselves
+    # so use those columns as table index
+    df = df.set_index(list(df.columns[:n_index_cols]))
+
+    # dont know multilevels for the index (first level is always '')
+    df.index = df.index.rename([_[1].strip() for _ in df.index.names])
+
+    # file always seem to have delim at the end of row, making empty column in pandas.  drop that
+    if df.columns[-1] == ('',''):
+        df = df.drop(columns=[('','')])
+
+    return df
 
         
 
